@@ -499,32 +499,34 @@ a { color: inherit; }
 .invest__note::first-letter { color: var(--color-ink); }
 
 /* ---------- Conversao intermediaria ---------- */
-.mini-lead { padding-block: 5rem; background: var(--color-paper); }
-@media (min-width: 900px) { .mini-lead { padding-block: 6rem; } }
+.mini-lead { padding-block: 3rem; background: var(--color-paper); }
+@media (min-width: 900px) { .mini-lead { padding-block: 4rem; } }
 .mini-lead__card {
   display: grid;
-  gap: 2rem;
-  padding: 2.25rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
   border: 1px solid var(--color-line);
   border-radius: 8px;
   background: var(--color-paper-soft);
 }
 @media (min-width: 800px) {
-  .mini-lead__card { grid-template-columns: 1.1fr 1fr; align-items: center; gap: 3rem; padding: 3rem; }
+  .mini-lead__card { grid-template-columns: 1.1fr 1fr; align-items: center; gap: 2.25rem; padding: 2rem; }
 }
 .mini-lead__title {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
-  margin: 0 0 0.75rem;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  margin: 0 0 0.5rem;
   color: var(--color-ink);
 }
-.mini-lead__support { margin: 0; color: var(--color-muted); max-width: 42ch; }
-.mini-lead__form { display: grid; gap: 1rem; }
+.mini-lead__support { margin: 0; color: var(--color-muted); max-width: 42ch; font-size: 0.92rem; }
+.mini-lead__form { display: grid; gap: 0.65rem; }
+.mini-lead__form .field { gap: 0.3rem; }
 .mini-lead__form .field label { color: var(--color-muted); }
 .mini-lead__form .field input {
   color: var(--color-ink);
   background: var(--color-paper);
   border: 1px solid var(--color-line);
+  padding: 0.6rem 0.85rem;
 }
 .mini-lead__form .field input::placeholder { color: var(--color-muted-light); }
 .mini-lead__form .field input:focus {
@@ -532,6 +534,7 @@ a { color: inherit; }
   background: var(--color-paper);
   box-shadow: 0 0 0 3px rgba(169, 129, 47, 0.25);
 }
+.mini-lead__form .btn { padding: 0.7rem 1.5rem; }
 .mini-lead__feedback {
   min-height: 1.2em;
   font-size: 0.88rem;
@@ -612,7 +615,7 @@ a { color: inherit; }
   color: var(--color-paper);
   background: rgba(250, 249, 246, 0.06);
   border: 1px solid var(--color-line-dark);
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 0.85rem 1rem;
   transition: border-color 0.3s var(--ease-premium), background-color 0.3s var(--ease-premium);
 }
