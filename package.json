@@ -1,0 +1,21 @@
+{
+  "name": "ww-franquias-lp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Landing page de captação de franquias - W&W Assessoria",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "optimize:images": "node scripts/optimize-images.cjs"
+  },
+  "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.2.5",
+    "@fontsource/lato": "^5.2.5"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.4",
+    "vite": "^6.0.0"
+  }
+}
