@@ -47,8 +47,7 @@ if ("IntersectionObserver" in window && revealSections.length) {
   revealSections.forEach((section) => section.classList.add("is-visible"));
 }
 
-const phoneInput = document.querySelector('[data-mask="phone"]');
-if (phoneInput) {
+document.querySelectorAll('[data-mask="phone"]').forEach((phoneInput) => {
   phoneInput.addEventListener("input", () => {
     const digits = phoneInput.value.replace(/\D/g, "").slice(0, 11);
     let formatted = digits;
@@ -60,7 +59,7 @@ if (phoneInput) {
     }
     phoneInput.value = formatted;
   });
-}
+});
 
 const cookieBar = document.querySelector("[data-cookie-bar]");
 const cookieAccept = document.querySelector("[data-cookie-accept]");
@@ -78,8 +77,6 @@ if (cookieAccept) {
 const yearEl = document.querySelector("[data-year]");
 if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-const leadForm = document.querySelector("[data-lead-form]");
-const leadFeedback = document.querySelector("[data-lead-feedback]");
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 
 function getFieldError(control) {
@@ -89,7 +86,7 @@ function getFieldError(control) {
   if (control.tagName === "SELECT") {
     return control.value ? "" : "Selecione uma opção.";
   }
-  if (control.id === "telefone") {
+  if (control.dataset.mask === "phone") {
     const digits = control.value.replace(/\D/g, "");
     if (!digits) return "Campo obrigatório.";
     if (digits.length < 10 || digits.length > 11) return "Informe um telefone válido com DDD.";
@@ -100,65 +97,72 @@ function getFieldError(control) {
   return "";
 }
 
-const leadFields = leadForm
-  ? Array.from(leadForm.querySelectorAll(".field:not(.field--trap):not(.field--row)"))
-      .map((wrap) => ({
-        wrap,
-        control: wrap.querySelector("input, select"),
-        error: wrap.querySelector("[data-field-error]"),
-      }))
-      .filter((f) => f.control && f.error)
-  : [];
+function createFieldValidator(form) {
+  const fields = Array.from(form.querySelectorAll(".field:not(.field--trap):not(.field--row)"))
+    .map((wrap) => ({
+      wrap,
+      control: wrap.querySelector("input, select"),
+      error: wrap.querySelector("[data-field-error]"),
+    }))
+    .filter((f) => f.control && f.error);
 
-function validateLeadField(field) {
-  const message = getFieldError(field.control);
-  field.wrap.classList.toggle("field--invalid", Boolean(message));
-  field.error.textContent = message;
-  return !message;
+  function validate(field) {
+    const message = getFieldError(field.control);
+    field.wrap.classList.toggle("field--invalid", Boolean(message));
+    field.error.textContent = message;
+    return !message;
+  }
+
+  fields.forEach((field) => {
+    const liveEvent = field.control.tagName === "SELECT" || field.control.type === "checkbox" ? "change" : "input";
+    field.control.addEventListener(liveEvent, () => {
+      if (field.wrap.classList.contains("field--invalid")) validate(field);
+    });
+    field.control.addEventListener("blur", () => validate(field));
+  });
+
+  return {
+    validateAll: () => fields.filter((field) => !validate(field)),
+    clearAll: () => fields.forEach((field) => {
+      field.wrap.classList.remove("field--invalid");
+      field.error.textContent = "";
+    }),
+  };
 }
 
-leadFields.forEach((field) => {
-  const liveEvent = field.control.tagName === "SELECT" || field.control.type === "checkbox" ? "change" : "input";
-  field.control.addEventListener(liveEvent, () => {
-    if (field.wrap.classList.contains("field--invalid")) validateLeadField(field);
-  });
-  field.control.addEventListener("blur", () => validateLeadField(field));
-});
+function setupLeadForm(form, feedback, { honeypotName, origem, buildPayload }) {
+  if (!form || !feedback) return;
+  const validator = createFieldValidator(form);
 
-if (leadForm) {
-  leadForm.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const invalidFields = leadFields.filter((field) => !validateLeadField(field));
+    const invalidFields = validator.validateAll();
     if (invalidFields.length) {
       invalidFields[0].control.focus();
       return;
     }
 
-    const formData = new FormData(leadForm);
-    if (formData.get("site")) {
+    const formData = new FormData(form);
+    if (formData.get(honeypotName)) {
       // honeypot preenchido: descarta silenciosamente, sem alertar o remetente automatizado
-      leadForm.reset();
+      form.reset();
       return;
     }
 
     const payload = {
-      nome: formData.get("nome"),
-      email: formData.get("email"),
-      telefone: formData.get("telefone"),
-      cidade: formData.get("cidade"),
-      uf: formData.get("uf"),
-      capital_disponivel: formData.get("capital"),
-      origem: "lp-franquias",
+      ...buildPayload(formData),
+      origem,
       pagina: window.location.href,
       enviado_em: new Date().toISOString(),
     };
 
-    const submitButton = leadForm.querySelector('button[type="submit"]');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalLabel = submitButton.textContent;
     submitButton.disabled = true;
     submitButton.textContent = "Enviando...";
-    leadFeedback.textContent = "";
-    leadFeedback.removeAttribute("data-state");
+    feedback.textContent = "";
+    feedback.removeAttribute("data-state");
 
     if (!WEBHOOK_URL) {
       console.warn("VITE_N8N_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
@@ -173,20 +177,93 @@ if (leadForm) {
 
       if (!response.ok) throw new Error(`Webhook respondeu ${response.status}`);
 
-      leadForm.reset();
-      leadFields.forEach((field) => {
-        field.wrap.classList.remove("field--invalid");
-        field.error.textContent = "";
-      });
-      leadFeedback.textContent = "Cadastro enviado com sucesso. Nossa equipe entrará em contato em breve.";
-      leadFeedback.setAttribute("data-state", "success");
+      form.reset();
+      validator.clearAll();
+      feedback.textContent = "Cadastro enviado com sucesso. Nossa equipe entrará em contato em breve.";
+      feedback.setAttribute("data-state", "success");
     } catch (error) {
-      console.error("Falha ao enviar lead para o webhook do n8n:", error);
-      leadFeedback.textContent = "Não foi possível enviar agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.";
-      leadFeedback.setAttribute("data-state", "error");
+      console.error(`Falha ao enviar lead (${origem}) para o webhook do n8n:`, error);
+      feedback.textContent = "Não foi possível enviar agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.";
+      feedback.setAttribute("data-state", "error");
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = "Enviar meu cadastro";
+      submitButton.textContent = originalLabel;
     }
   });
 }
+
+setupLeadForm(document.querySelector("[data-lead-form]"), document.querySelector("[data-lead-feedback]"), {
+  honeypotName: "site",
+  origem: "lp-franquias",
+  buildPayload: (formData) => ({
+    nome: formData.get("nome"),
+    email: formData.get("email"),
+    telefone: formData.get("telefone"),
+    cidade: formData.get("cidade"),
+    uf: formData.get("uf"),
+    capital_disponivel: formData.get("capital"),
+  }),
+});
+
+function buildWhatsappUrl(nome) {
+  const phone = document.body.dataset.whatsappPhone;
+  const text = `Olá! Me chamo ${nome} e quero saber mais sobre a franquia W&W Assessoria.`;
+  return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+}
+
+function setupMiniLeadForm(form) {
+  const feedback = form.querySelector("[data-mini-lead-feedback]");
+  if (!feedback) return;
+  const validator = createFieldValidator(form);
+  const honeypotInput = form.querySelector(".field--trap input");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const invalidFields = validator.validateAll();
+    if (invalidFields.length) {
+      invalidFields[0].control.focus();
+      return;
+    }
+
+    const formData = new FormData(form);
+    if (honeypotInput && formData.get(honeypotInput.name)) {
+      // honeypot preenchido: descarta silenciosamente, sem alertar o remetente automatizado
+      form.reset();
+      return;
+    }
+
+    const nome = formData.get("nome");
+    // abre o WhatsApp dentro do próprio clique, senão o navegador pode bloquear como pop-up
+    window.open(buildWhatsappUrl(nome), "_blank", "noopener");
+
+    const payload = {
+      nome,
+      telefone: formData.get("telefone"),
+      email: formData.get("email"),
+      form_id: form.dataset.formId,
+      origem: "lp-franquias-mini",
+      pagina: window.location.href,
+      enviado_em: new Date().toISOString(),
+    };
+
+    if (WEBHOOK_URL) {
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch((error) => {
+        console.error(`Falha ao enviar lead (${payload.form_id}) para o webhook do n8n:`, error);
+      });
+    } else {
+      console.warn("VITE_N8N_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
+    }
+
+    form.reset();
+    validator.clearAll();
+    feedback.textContent = "Perfeito! Vamos continuar no WhatsApp.";
+    feedback.setAttribute("data-state", "success");
+  });
+}
+
+document.querySelectorAll("[data-mini-lead-form]").forEach(setupMiniLeadForm);
