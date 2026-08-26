@@ -228,6 +228,45 @@
       </div>
     </section>
 
+    <!-- CONVERSAO INTERMEDIARIA -->
+    <section class="mini-lead" id="quero-saber-mais" aria-labelledby="mini-lead-title" data-reveal>
+      <div class="wrap">
+        <div class="mini-lead__card">
+          <div class="mini-lead__text">
+            <h2 id="mini-lead-title" class="mini-lead__title">Quer receber os números completos no seu WhatsApp?</h2>
+            <p class="mini-lead__support">
+              Deixe seu nome e WhatsApp e te enviamos o resumo da franquia, territórios disponíveis e os próximos
+              passos — sem compromisso.
+            </p>
+          </div>
+
+          <form class="mini-lead__form" data-mini-lead-form novalidate>
+            <div class="field field--row">
+              <div class="field">
+                <label for="mini-nome">Nome</label>
+                <input type="text" id="mini-nome" name="nome" autocomplete="name" required />
+                <span class="field__error" data-field-error aria-live="polite"></span>
+              </div>
+              <div class="field">
+                <label for="mini-telefone">WhatsApp (com DDD)</label>
+                <input type="tel" id="mini-telefone" name="telefone" inputmode="numeric" autocomplete="tel" data-mask="phone" required />
+                <span class="field__error" data-field-error aria-live="polite"></span>
+              </div>
+            </div>
+
+            <div class="field field--trap" aria-hidden="true">
+              <label for="mini-site">Não preencha este campo</label>
+              <input type="text" id="mini-site" name="site_mini" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--block">Quero receber</button>
+
+            <p class="mini-lead__feedback" data-mini-lead-feedback role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <!-- PERFIL DO FRANQUEADO -->
     <section class="profile" id="perfil" aria-labelledby="profile-title" data-reveal>
       <div class="wrap">
