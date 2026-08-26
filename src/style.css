@@ -520,10 +520,6 @@ a { color: inherit; }
 }
 .mini-lead__support { margin: 0; color: var(--color-muted); max-width: 42ch; }
 .mini-lead__form { display: grid; gap: 1rem; }
-.mini-lead__form .field--row { grid-template-columns: 1fr 1fr; }
-@media (max-width: 480px) {
-  .mini-lead__form .field--row { grid-template-columns: 1fr; }
-}
 .mini-lead__form .field label { color: var(--color-muted); }
 .mini-lead__form .field input {
   color: var(--color-ink);

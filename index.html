@@ -45,7 +45,7 @@
   }
   </script>
 </head>
-<body>
+<body data-whatsapp-phone="5551999233401">
   <a class="skip-link" href="#form-franquia">Pular para o formulário</a>
 
   <header class="site-header" data-header>
@@ -108,6 +108,47 @@
         <div class="hero__actions">
           <a href="#form-franquia" class="btn btn--primary">Quero ser franqueado</a>
           <a href="#investimento" class="btn btn--ghost">Ver números do negócio</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONVERSAO RAPIDA (pos-hero) -->
+    <section class="mini-lead" id="fale-agora" aria-labelledby="mini-lead-hero-title" data-reveal>
+      <div class="wrap">
+        <div class="mini-lead__card">
+          <div class="mini-lead__text">
+            <h2 id="mini-lead-hero-title" class="mini-lead__title">Já sabe que quer conversar?</h2>
+            <p class="mini-lead__support">
+              Deixe seu nome, WhatsApp e e-mail e a gente já continua a conversa com você por lá — sem espera.
+            </p>
+          </div>
+
+          <form class="mini-lead__form" data-mini-lead-form data-form-id="mini-hero" novalidate>
+            <div class="field">
+              <label for="hero-lead-nome">Nome</label>
+              <input type="text" id="hero-lead-nome" name="nome" autocomplete="name" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="hero-lead-telefone">WhatsApp (com DDD)</label>
+              <input type="tel" id="hero-lead-telefone" name="telefone" inputmode="numeric" autocomplete="tel" data-mask="phone" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="hero-lead-email">E-mail</label>
+              <input type="email" id="hero-lead-email" name="email" autocomplete="email" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
+            </div>
+
+            <div class="field field--trap" aria-hidden="true">
+              <label for="hero-lead-site">Não preencha este campo</label>
+              <input type="text" id="hero-lead-site" name="site_mini" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--block">Falar no WhatsApp agora</button>
+
+            <p class="mini-lead__feedback" data-mini-lead-feedback role="status" aria-live="polite"></p>
+          </form>
         </div>
       </div>
     </section>
@@ -235,23 +276,26 @@
           <div class="mini-lead__text">
             <h2 id="mini-lead-title" class="mini-lead__title">Quer receber os números completos no seu WhatsApp?</h2>
             <p class="mini-lead__support">
-              Deixe seu nome e WhatsApp e te enviamos o resumo da franquia, territórios disponíveis e os próximos
-              passos — sem compromisso.
+              Deixe seu nome, WhatsApp e e-mail e a gente já continua a conversa com você por lá, com o resumo da
+              franquia, territórios disponíveis e os próximos passos.
             </p>
           </div>
 
-          <form class="mini-lead__form" data-mini-lead-form novalidate>
-            <div class="field field--row">
-              <div class="field">
-                <label for="mini-nome">Nome</label>
-                <input type="text" id="mini-nome" name="nome" autocomplete="name" required />
-                <span class="field__error" data-field-error aria-live="polite"></span>
-              </div>
-              <div class="field">
-                <label for="mini-telefone">WhatsApp (com DDD)</label>
-                <input type="tel" id="mini-telefone" name="telefone" inputmode="numeric" autocomplete="tel" data-mask="phone" required />
-                <span class="field__error" data-field-error aria-live="polite"></span>
-              </div>
+          <form class="mini-lead__form" data-mini-lead-form data-form-id="mini-investimento" novalidate>
+            <div class="field">
+              <label for="mini-nome">Nome</label>
+              <input type="text" id="mini-nome" name="nome" autocomplete="name" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="mini-telefone">WhatsApp (com DDD)</label>
+              <input type="tel" id="mini-telefone" name="telefone" inputmode="numeric" autocomplete="tel" data-mask="phone" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label for="mini-email">E-mail</label>
+              <input type="email" id="mini-email" name="email" autocomplete="email" required />
+              <span class="field__error" data-field-error aria-live="polite"></span>
             </div>
 
             <div class="field field--trap" aria-hidden="true">
@@ -259,7 +303,7 @@
               <input type="text" id="mini-site" name="site_mini" tabindex="-1" autocomplete="off" />
             </div>
 
-            <button type="submit" class="btn btn--primary btn--block">Quero receber</button>
+            <button type="submit" class="btn btn--primary btn--block">Falar no WhatsApp agora</button>
 
             <p class="mini-lead__feedback" data-mini-lead-feedback role="status" aria-live="polite"></p>
           </form>

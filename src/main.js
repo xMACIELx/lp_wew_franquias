@@ -205,11 +205,65 @@ setupLeadForm(document.querySelector("[data-lead-form]"), document.querySelector
   }),
 });
 
-setupLeadForm(document.querySelector("[data-mini-lead-form]"), document.querySelector("[data-mini-lead-feedback]"), {
-  honeypotName: "site_mini",
-  origem: "lp-franquias-mini",
-  buildPayload: (formData) => ({
-    nome: formData.get("nome"),
-    telefone: formData.get("telefone"),
-  }),
-});
+function buildWhatsappUrl(nome) {
+  const phone = document.body.dataset.whatsappPhone;
+  const text = `Olá! Me chamo ${nome} e quero saber mais sobre a franquia W&W Assessoria.`;
+  return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+}
+
+function setupMiniLeadForm(form) {
+  const feedback = form.querySelector("[data-mini-lead-feedback]");
+  if (!feedback) return;
+  const validator = createFieldValidator(form);
+  const honeypotInput = form.querySelector(".field--trap input");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const invalidFields = validator.validateAll();
+    if (invalidFields.length) {
+      invalidFields[0].control.focus();
+      return;
+    }
+
+    const formData = new FormData(form);
+    if (honeypotInput && formData.get(honeypotInput.name)) {
+      // honeypot preenchido: descarta silenciosamente, sem alertar o remetente automatizado
+      form.reset();
+      return;
+    }
+
+    const nome = formData.get("nome");
+    // abre o WhatsApp dentro do próprio clique, senão o navegador pode bloquear como pop-up
+    window.open(buildWhatsappUrl(nome), "_blank", "noopener");
+
+    const payload = {
+      nome,
+      telefone: formData.get("telefone"),
+      email: formData.get("email"),
+      form_id: form.dataset.formId,
+      origem: "lp-franquias-mini",
+      pagina: window.location.href,
+      enviado_em: new Date().toISOString(),
+    };
+
+    if (WEBHOOK_URL) {
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch((error) => {
+        console.error(`Falha ao enviar lead (${payload.form_id}) para o webhook do n8n:`, error);
+      });
+    } else {
+      console.warn("VITE_N8N_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
+    }
+
+    form.reset();
+    validator.clearAll();
+    feedback.textContent = "Perfeito! Vamos continuar no WhatsApp.";
+    feedback.setAttribute("data-state", "success");
+  });
+}
+
+document.querySelectorAll("[data-mini-lead-form]").forEach(setupMiniLeadForm);
