@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /privacidade.html
 
 Sitemap: https://franquias.wewassessoria.com.br/sitemap.xml
