@@ -77,7 +77,6 @@ if (cookieAccept) {
 const yearEl = document.querySelector("[data-year]");
 if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 const CAPI_WEBHOOK_URL = import.meta.env.VITE_N8N_CAPI_WEBHOOK_URL;
 
 function getFieldError(control) {
@@ -182,32 +181,15 @@ function setupLeadForm(form, feedback, { honeypotName, formId, origem, buildPayl
 
     window.open(buildWhatsappUrl(formData.get("nome")), "_blank", "noopener");
 
+    // Payload unico com os campos do lead + os campos que o workflow do n8n usa
+    // pra repassar o evento pro Meta Conversions API (event_id do fbq acima
+    // permite a deduplicacao entre o evento do navegador e o server-side).
     const payload = {
       ...buildPayload(formData),
       form_id: formId,
       origem,
       pagina: window.location.href,
       enviado_em: new Date().toISOString(),
-    };
-
-    if (WEBHOOK_URL) {
-      fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }).catch((error) => {
-        console.warn(`Falha ao enviar lead (${formId}) para o webhook do n8n:`, error);
-      });
-    } else {
-      console.warn("VITE_N8N_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
-    }
-
-    // POST separado, dedicado ao workflow do n8n que repassa o evento pro Meta
-    // Conversions API - usa o mesmo event_id do fbq acima pra permitir deduplicacao.
-    const capiPayload = {
-      nome: formData.get("nome"),
-      telefone: formData.get("telefone"),
-      email: formData.get("email"),
       event_id: eventId,
       event_source_url: window.location.href,
       fbp: getCookie("_fbp"),
@@ -218,12 +200,12 @@ function setupLeadForm(form, feedback, { honeypotName, formId, origem, buildPayl
       fetch(CAPI_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(capiPayload),
+        body: JSON.stringify(payload),
       }).catch((error) => {
-        console.warn(`Falha ao enviar evento CAPI (${formId}) para o webhook do n8n:`, error);
+        console.warn(`Falha ao enviar lead (${formId}) para o webhook do n8n:`, error);
       });
     } else {
-      console.warn("VITE_N8N_CAPI_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o evento do Meta ao n8n.");
+      console.warn("VITE_N8N_CAPI_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
     }
 
     form.reset();
