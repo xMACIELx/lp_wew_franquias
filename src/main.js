@@ -78,6 +78,7 @@ const yearEl = document.querySelector("[data-year]");
 if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+const CAPI_WEBHOOK_URL = import.meta.env.VITE_N8N_CAPI_WEBHOOK_URL;
 
 function getFieldError(control) {
   if (control.type === "checkbox") {
@@ -187,10 +188,6 @@ function setupLeadForm(form, feedback, { honeypotName, formId, origem, buildPayl
       origem,
       pagina: window.location.href,
       enviado_em: new Date().toISOString(),
-      event_id: eventId,
-      event_source_url: window.location.href,
-      fbp: getCookie("_fbp"),
-      fbc: getCookie("_fbc"),
     };
 
     if (WEBHOOK_URL) {
@@ -203,6 +200,30 @@ function setupLeadForm(form, feedback, { honeypotName, formId, origem, buildPayl
       });
     } else {
       console.warn("VITE_N8N_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o formulário ao n8n.");
+    }
+
+    // POST separado, dedicado ao workflow do n8n que repassa o evento pro Meta
+    // Conversions API - usa o mesmo event_id do fbq acima pra permitir deduplicacao.
+    const capiPayload = {
+      nome: formData.get("nome"),
+      telefone: formData.get("telefone"),
+      email: formData.get("email"),
+      event_id: eventId,
+      event_source_url: window.location.href,
+      fbp: getCookie("_fbp"),
+      fbc: getCookie("_fbc"),
+    };
+
+    if (CAPI_WEBHOOK_URL) {
+      fetch(CAPI_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(capiPayload),
+      }).catch((error) => {
+        console.warn(`Falha ao enviar evento CAPI (${formId}) para o webhook do n8n:`, error);
+      });
+    } else {
+      console.warn("VITE_N8N_CAPI_WEBHOOK_URL não configurada. Defina em um .env.local para conectar o evento do Meta ao n8n.");
     }
 
     form.reset();
